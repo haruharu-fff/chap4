@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from db_setting import ENGINE
+from db_model import Base
 from datetime import datetime
 from typing import List
 import db_model as m
@@ -56,8 +58,13 @@ def add_tasks(data: Task):
         # 正常、異常にかかわらずセッションを終了する
         session.close()
 
+#全タスク削除の処理
+@app.delete("/tasks")
+def delete_all_tasks():
+    Base.metadata.drop_all(bind=ENGINE)
+    Base.metadata.create_all(bind=ENGINE)
 
-# タスク削除の処理
+# 指定したタスク削除の処理
 @app.delete("/tasks/{id}")
 def delete_tasks(id: int):
     session = s.session()
