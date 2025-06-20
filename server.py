@@ -106,10 +106,22 @@ def get_all_tasks():
 def get_tasks(title: str):
     session = s.session()
     try:
-        result = session.query(m.Tasks).filter(m.Tasks.title == title).first()
+        result = session.query(m.Tasks).filter(m.Tasks.title == title)
         if not result:
             raise HTTPException(status_code=404, detail="Task not found")
-        return result
+        task_list=[]
+        for task in result:
+            # ここでjson形式で保存されているchildrenをpythonのリストに変換
+            task_list.append(
+                TaskResponse(
+                    task_id=task.task_id,
+                    title=task.title,
+                    deadline=task.deadline,
+                    memo=task.memo,
+                    children=task.get_children(),
+                )
+            )
+        return task_list
     finally:
         session.close()
 
